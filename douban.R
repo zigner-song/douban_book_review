@@ -3,19 +3,15 @@ library(rvest)
 library(stringr)
 library(dplyr)
 
-
-
-
-
 #douban  short comment
 
-url_douban<-"https://book.douban.com/subject/26834861/comments/new?p="  #26834861ÎªÊéÔÚ¶¹°êµÄID
+url_douban<-"https://book.douban.com/subject/26834861/comments/new?p="  #26834861ä¸ºä¹¦åœ¨è±†ç“£çš„ID
 
 
 comment0<-NULL
 my.comment<-NULL
-for(i in 1:2){ #¶ÌÆÀ¹²2Ò³
-  print(paste(">>>> ",trimws(i/2*100),"% >>>>",sep="")) #½ø¶ÈÌõ
+for(i in 1:2){ #çŸ­è¯„å…±2é¡µ
+  print(paste(">>>> ",trimws(i/2*100),"% >>>>",sep="")) #è¿›åº¦æ¡
   
   url<-paste(url_douban,str_trim(as.character(i)),sep ="")
   web<-read_html(url)
@@ -23,33 +19,33 @@ for(i in 1:2){ #¶ÌÆÀ¹²2Ò³
   my.comment<-c(my.comment,comment0)
 }
 
-my.comment<-str_replace_all(my.comment,"[:space:]","")   #É¾³ı¶àÓàµÄ¿Õ¸ñºÍ»»ĞĞ
+my.comment<-str_replace_all(my.comment,"[:space:]","")   #åˆ é™¤å¤šä½™çš„ç©ºæ ¼å’Œæ¢è¡Œ
 
 
 
 library(jiebaR)
 
 
-seg<-worker(user='DTE.utf8') #Ìí¼Ó±¾µØ´Ê¿â£¬Ã»´í¾Í¡°Æëµ±±ğ¡° Ò»¸ö´Ê
-tagger <- worker("tag")      #´ÊĞÔ
+seg<-worker(user='DTE.utf8') #æ·»åŠ æœ¬åœ°è¯åº“ï¼Œæ²¡é”™å°±â€œé½å½“åˆ«â€œ ä¸€ä¸ªè¯
+tagger <- worker("tag")      #è¯æ€§
 
-raw.comment<-seg[comment]   #·Ö´Ê
-raw.comment<-(tagger <= raw.comment)  #Ìí¼Ó´ÊĞÔ
+raw.comment<-seg[comment]   #åˆ†è¯
+raw.comment<-(tagger <= raw.comment)  #æ·»åŠ è¯æ€§
 
 ins<-data.frame(char=raw.comment,tag=names(raw.comment)) %>%distinct()
 
-freq.comment<-freq(raw.comment) #¼ÆËã´ÊÆµ
+freq.comment<-freq(raw.comment) #è®¡ç®—è¯é¢‘
 freq.comment<-merge(freq.comment,ins,by="char")
 head(freq.comment)
 
 freq.comment<-subset(freq.comment,freq>2 & str_length(freq.comment$char)>1 & 
-                       !(freq.comment$char %in% c("±¾Êé")))
+                       !(freq.comment$char %in% c("æœ¬ä¹¦")))  #æ’é™¤â€œæœ¬ä¹¦â€ä¸€è¯
 
 
 library(wordcloud2)
 
 
-#ÓÃjspÉèÖÃhtmlÖĞ´ÊÔÆµÄÑÕÉ«
+#ç”¨jspè®¾ç½®htmlä¸­è¯äº‘çš„é¢œè‰²
 js_color_fun <- "function (word, weight) {      
 return (weight > 10) ? '#f02222' : '#c09292';
 }"
@@ -62,20 +58,16 @@ wordcloud2(freq.comment, color = htmlwidgets::JS(js_color_fun),
 
 
 # douban long comment
-
-
-
-
 #####################
 
 
 url_douban.long_comment<-"https://book.douban.com/subject/26834861/reviews?start="
 url_long.comment<-NULL
 
-#»ñÈ¡³¤ÆÀURL
+#è·å–é•¿è¯„URL
 for(i in seq(0,80,20)){
   
-  print(paste(">>>> ",trimws(i),"% >>>>",sep="")) #½ø¶ÈÌõ
+  print(paste(">>>> ",trimws(i),"% >>>>",sep="")) #è¿›åº¦æ¡
   i<-0
   url_douban.long_comment_sub<-paste(url_douban.long_comment,i,sep="")
   web0<-read_Url(url_douban.long_comment_sub)
@@ -85,8 +77,8 @@ for(i in seq(0,80,20)){
 
 comment_long<-NULL
 for(i in 1:length(url_long.comment)){
-  Sys.sleep(2)#±ÜÃâÅÀ³æ¹ı¿ìµ¼ÖÂ±»·âIP
-  print(paste(">>>> ",trimws(i/length(url_long.comment)*100),"% >>>>",sep="")) #½ø¶ÈÌõ
+  Sys.sleep(2)#é¿å…çˆ¬è™«è¿‡å¿«å¯¼è‡´è¢«å°IP
+  print(paste(">>>> ",trimws(i/length(url_long.comment)*100),"% >>>>",sep="")) #è¿›åº¦æ¡
   
   
   #i<-1
@@ -106,29 +98,29 @@ for(i in 1:length(url_long.comment)){
 library(jiebaR)
 
 
-seg<-worker(user='DTE.utf8') #Ìí¼Ó±¾µØ´Ê¿â£¬Ã»´í¾Í¡°Æëµ±±ğ¡° Ò»¸ö´Ê
-tagger <- worker("tag")      #´ÊĞÔ
+seg<-worker(user='DTE.utf8') #æ·»åŠ æœ¬åœ°è¯åº“ï¼Œæ²¡é”™å°±â€œé½å½“åˆ«â€œ ä¸€ä¸ªè¯
+tagger <- worker("tag")      #è¯æ€§
 
-raw.comment_long<-seg[comment_long]   #·Ö´Ê
-raw.comment_long<-(tagger <= raw.comment)  #Ìí¼Ó´ÊĞÔ
+raw.comment_long<-seg[comment_long]   #åˆ†è¯
+raw.comment_long<-(tagger <= raw.comment)  #æ·»åŠ è¯æ€§
 
 #ins<-data.frame(char=raw.comment,tag=names(raw.comment)) %>%distinct()
 
-freq.comment_long<-freq(raw.comment_long) #¼ÆËã´ÊÆµ
+freq.comment_long<-freq(raw.comment_long) #è®¡ç®—è¯é¢‘
 freq.comment_long<-merge(freq.comment_long,
                          data.frame(char=raw.comment_long,tag=names(raw.comment_long)) %>%distinct(),
                          by="char")
 head(freq.comment_long)
 
 freq.comment_long<-subset(freq.comment_long,freq>5 & str_length(freq.comment_long$char)>1 & 
-                       (!(freq.comment_long$char %in% c("±¾Êé","ÒòÎª")) &
+                       (!(freq.comment_long$char %in% c("æœ¬ä¹¦","å› ä¸º")) &
                            freq.comment_long$tag %in% c("n","ns","vn","x","nr","a")))
 
 freq.comment_long<-freq.comment_long[order(-freq.comment_long$freq),]
 library(wordcloud2)
 
 
-#ÓÃjspÉèÖÃhtmlÖĞ´ÊÔÆµÄÑÕÉ«
+#ç”¨jspè®¾ç½®htmlä¸­è¯äº‘çš„é¢œè‰²
 js_color_fun <- "function (word, weight) {      
 return (weight > 500) ? '#f02222' : '#c09292';
 }"
