@@ -3,6 +3,10 @@ library(rvest)
 library(stringr)
 library(dplyr)
 
+
+
+
+
 #douban  short comment
 
 url_douban<-"https://book.douban.com/subject/26834861/comments/new?p="  #26834861为书在豆瓣的ID
@@ -39,7 +43,7 @@ freq.comment<-merge(freq.comment,ins,by="char")
 head(freq.comment)
 
 freq.comment<-subset(freq.comment,freq>2 & str_length(freq.comment$char)>1 & 
-                       !(freq.comment$char %in% c("本书")))  #排除“本书”一词
+                       !(freq.comment$char %in% c("本书")))
 
 
 library(wordcloud2)
@@ -58,6 +62,10 @@ wordcloud2(freq.comment, color = htmlwidgets::JS(js_color_fun),
 
 
 # douban long comment
+
+
+
+
 #####################
 
 
@@ -80,8 +88,6 @@ for(i in 1:length(url_long.comment)){
   Sys.sleep(2)#避免爬虫过快导致被封IP
   print(paste(">>>> ",trimws(i/length(url_long.comment)*100),"% >>>>",sep="")) #进度条
   
-  
-  #i<-1
   web_long.comment<-read_Url(url_long.comment[i])
   if(is.na(web_long.comment)==F){
     comment0<-(web_long.comment %>% html_nodes(".clearfix"))[2] %>% 
@@ -98,7 +104,8 @@ for(i in 1:length(url_long.comment)){
 library(jiebaR)
 
 
-seg<-worker(user='DTE.utf8') #添加本地词库，没错就“齐当别“ 一个词
+seg<-worker()
+new_user_word(seg, c("齐当别","跨期","李纾","李老师"))
 tagger <- worker("tag")      #词性
 
 raw.comment_long<-seg[comment_long]   #分词
@@ -117,6 +124,7 @@ freq.comment_long<-subset(freq.comment_long,freq>5 & str_length(freq.comment_lon
                            freq.comment_long$tag %in% c("n","ns","vn","x","nr","a")))
 
 freq.comment_long<-freq.comment_long[order(-freq.comment_long$freq),]
+
 library(wordcloud2)
 
 
@@ -130,3 +138,48 @@ wordcloud2(freq.comment_long,backgroundColor = "black",
            #figPath=lishu,
            shape="cardioid",
            size=1,color = htmlwidgets::JS(js_color_fun))
+
+
+###########情感分析
+seg<-worker() 
+new_user_word(seg, c("齐当别","跨期","李纾","李老师"))
+
+#导入情绪词词典
+vocabulary<-read.csv("vocabulary.csv",stringsAsFactors=F,na.strings = NULL)
+vocabulary$情感分类
+
+new_user_word(seg, vocabulary$词语) #添加情感词
+
+
+
+raw.comment_long2<-seg[comment_long]
+raw.comment_long2<-raw.comment_long2[raw.comment_long2 %in% vocabulary$词语]
+
+#删除若干书中的词汇，这些词汇往往是用于表述书的内容，而不是对书的评价
+stop.word<-c("作为","不是","通过","重要","后悔","吃亏","补偿","主观",
+             "最大","最小","最好","最差","正面","负面","获得","损失"
+             )
+raw.comment_long2<-raw.comment_long2[!(raw.comment_long2 %in% stop.word)]
+
+
+freq.comment_long2<-freq(raw.comment_long2)
+
+pos.words<-vocabulary$词语[vocabulary$极性==1]
+neg.words<-vocabulary$词语[vocabulary$极性==2]
+emo.words<-vocabulary$词语[vocabulary$极性 %in% 1:2]
+
+freq.comment_long2.pos<-subset(freq.comment_long2,char %in% pos.words & str_length(char)>1)
+freq.comment_long2.neg<-subset(freq.comment_long2,char %in% neg.words & str_length(char)>1)
+freq.comment_long2    <-subset(freq.comment_long2,char %in% emo.words & str_length(char)>1)
+
+freq.comment_long2.pos<-freq.comment_long2.pos[order(-freq.comment_long2.pos$freq),]
+freq.comment_long2.neg<-freq.comment_long2.neg[order(-freq.comment_long2.neg$freq),]
+freq.comment_long2    <-freq.comment_long2    [order(-freq.comment_long2$freq),]
+
+wordcloud2(freq.comment_long2.pos,backgroundColor = "black",
+           color = "random-light")
+wordcloud2(freq.comment_long2.neg,backgroundColor = "black",
+           color = "random-light")
+
+wordcloud2(freq.comment_long2,backgroundColor = "black",
+           color = "random-light")
